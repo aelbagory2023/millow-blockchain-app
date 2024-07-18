@@ -17,7 +17,7 @@ describe("Escrow", () => {
     realEstate = await RealEstate.deploy();
 
     //Mint
-    let transaction = await realEstate
+    transaction = await realEstate
       .connect(seller)
       .mint(
         "https://ipfs.io/ipfs/QmQUozrHLAusXDxrvsESJ3PYB3rUeUuBAvVWw6nop2uu7c/1.png"
@@ -31,6 +31,14 @@ describe("Escrow", () => {
       inspector.address,
       lender.address
     );
+
+    //approve property
+    transaction = await realEstate.connect(seller).approve(escrow.address, 1);
+    await transaction.wait();
+
+    //list property
+    transaction = await escrow.connect(seller).list(1);
+    await transaction.wait();
   });
 
   describe("Deployment", () => {
@@ -49,6 +57,12 @@ describe("Escrow", () => {
     it("Returns lender", async () => {
       const result = await escrow.lender();
       expect(result).to.be.equal(lender.address);
+    });
+  });
+
+  describe("Listing", () => {
+    it("Updates ownership", async () => {
+      expect(await realEstate.ownerOf(1)).to.be.equal(escrow.address);
     });
   });
 });
